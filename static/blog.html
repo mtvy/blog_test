@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog and ID Interaction</title>
+</head>
+<body>
+    <h2>Blog List</h2>
+    <button id="getBlogListBtn">Get Blog List</button>
+    <div id="blogList"></div>
+
+    <h2>ID List</h2>
+    <button id="getIDListBtn">Get ID List</button>
+    <div id="idList"></div>
+
+    <!-- <h2>Add New ID </h2>
+    <form id="addBlogForm">
+        <label>New ID :</label><br>
+        <input type="text" id="title" name="title" required><br>
+        <button type="submit">Submit</button>
+    </form> -->
+    <h2>Add New ID</h2>
+    <form id="addIDForm">
+        <label>Name:</label><br>
+        <input type="text" id="name" name="name" required><br>
+        <button type="submit">Submit</button>
+    </form>
+
+    <h2>Add New Blog</h2>
+    <form id="addBlogForm">
+        <label>Title:</label><br>
+        <input type="text" id="title" name="title" required><br>
+        <label>Content:</label><br>
+        <textarea id="content" name="content" rows="4" required></textarea><br>
+        <button type="submit">Submit</button>
+    </form>
+
+    <h2>Delete ID</h2>
+    <button id="deleteIDBtn">Delete ID</button>
+    <input type="number" id="deleteIDInput" placeholder="Enter ID to delete">
+
+    <h2>Delete Blog</h2>
+    <button id="deleteBlogBtn">Delete Blog</button>
+    <input type="number" id="deleteBlogInput" placeholder="Enter Blog ID to delete">
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Функция для выполнения GET запроса на /blog/list
+            function getList() {
+                fetch('/blog/list')
+                    .then(response => response.json())
+                    .then(data => {
+                        let blogList = document.getElementById('blogList');
+                        blogList.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+
+            // Функция для выполнения GET запроса на /blog/id
+            function getID() {
+                fetch('/blog/id')
+                    .then(response => response.json())
+                    .then(data => {
+                        let idList = document.getElementById('idList');
+                        idList.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+
+            // Добавляем обработчик события на кнопку "Get Blog List"
+            document.getElementById('getBlogListBtn').addEventListener('click', getList);
+
+            // Добавляем обработчик события на кнопку "Get ID List"
+            document.getElementById('getIDListBtn').addEventListener('click', getID);
+
+            // Добавляем обработчик события на отправку формы "Add New Blog"
+            document.getElementById('addBlogForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                let formData = {
+                    title: document.getElementById('title').value,
+                    content: document.getElementById('content').value
+                };
+    
+                fetch('/blog/list', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData),
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Success:', data);
+                        getList();  // Обновляем список блогов после добавления нового блога
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            });
+             // Добавляем обработчик события на отправку формы "Add New ID"
+             document.getElementById('addIDForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                let formData = {
+                    name: document.getElementById('name').value
+                };
+
+                fetch('/blog/id', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData),
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Success:', data);
+                        getID();  // Обновляем список идентификаторов после добавления нового ID
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            });
+               // Добавляем обработчик события на кнопку "Delete ID"
+        document.getElementById('deleteIDBtn').addEventListener('click', function() {
+            let idToDelete = parseInt(document.getElementById('deleteIDInput').value);
+
+            fetch(`/blog/id/${idToDelete}`, {
+                method: 'DELETE',
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Deleted ID:', data);
+                    getID();  // Обновляем список идентификаторов после удаления ID
+                })
+                .catch(error => {
+                    console.error('Error deleting ID:', error);
+                });
+        });
+
+        // Добавляем обработчик события на кнопку "Delete Blog"
+        document.getElementById('deleteBlogBtn').addEventListener('click', function() {
+            let blogIdToDelete = parseInt(document.getElementById('deleteBlogInput').value);
+
+            fetch(`/blog/list/${blogIdToDelete}`, {
+                method: 'DELETE',
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Deleted Blog:', data);
+                    getList();  // Обновляем список блогов после удаления блога
+                })
+                .catch(error => {
+                    console.error('Error deleting Blog:', error);
+                });
+        });
+    });
+    </script>
+</body>
+</html>
